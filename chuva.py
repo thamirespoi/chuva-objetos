@@ -52,6 +52,9 @@ jogador_parado_retangle = jogador_parado_surfaces[jogador_index].get_rect(center
 # Define a velocidade de movimento do jogador
 movimento_jogador = 0
 
+# Define a direção que o jogador está indo
+direcao_jogador = 0
+
 # Laço principal do jogo
 while True:
 
@@ -69,10 +72,12 @@ while True:
             # Verifica se o jogador pressionou a seta para direita
             if evento.key == pygame.K_RIGHT:
                 movimento_jogador = 5
+                direcao_jogador = 1
 
             # Verifica se o jogador pressionou a seta para esquerda
             if evento.key == pygame.K_LEFT:
                 movimento_jogador = -5
+                direcao_jogador = -1
 
         # Verifica se o jogador soltou alguma tecla
         if evento.type == pygame.KEYUP:
@@ -105,17 +110,19 @@ while True:
     jogador_parado_retangle.x += movimento_jogador
 
     # Impede que o jogador saia da tela
-    if jogador_parado_retangle.left <= 0:
-        jogador_parado_retangle.left = 0
-    elif jogador_parado_retangle.right >= 960:
-        jogador_parado_retangle.right = 960
+    if jogador_parado_retangle.left <= -30:
+        jogador_parado_retangle.left = -30
+    elif jogador_parado_retangle.right >= 1000:
+        jogador_parado_retangle.right = 1000
 
     # Vira o jogador para a direção que ele está indo
-    if movimento_jogador > 0:
-        tela.blit(pygame.transform.flip(jogador_parado_surfaces[int(jogador_index)], True, False), jogador_parado_retangle)
+    if direcao_jogador == 1:
+        jogador = pygame.transform.flip(jogador_parado_surfaces[int(jogador_index)], True, False)
     else:
-        tela.blit(jogador_parado_surfaces[int(jogador_index)], jogador_parado_retangle)
+        jogador = jogador_parado_surfaces[int(jogador_index)]
 
+    # Desenha o jogador na tela
+    tela.blit(jogador, jogador_parado_retangle)
 
     # Atualiza a tela
     pygame.display.update()
