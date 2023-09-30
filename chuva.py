@@ -8,6 +8,9 @@ pygame.init()
 tamanho = (960, 540)
 tela = pygame.display.set_mode(tamanho)
 
+# Define o Titulo da Janela
+pygame.display.set_caption("ChuvaMortal")
+
 ##
 ## Importa os arquivos necessários
 ##
@@ -32,31 +35,57 @@ pedrachao = pygame.transform.scale(pedrachao, tamanho)
 lua = pygame.transform.scale(lua, tamanho)
 pedraflutuante = pygame.transform.scale(pedraflutuante, tamanho)
 
-# Importa o personagem 
-jogador_parado_surf = pygame.image.load('assets/jogador/parado/Hero Boy Idle1.png').convert_alpha()
-jogador_parado_rect = jogador_parado_surf.get_rect(midbottom = (100, 530))
+#----------------------------------------------------------------------------------------
+jogador_index = 0
 
-# Define o Titulo da Janela
-pygame.display.set_caption("ChuvaMortal")
+# Carrega as imagens do personagem parado
+jogador_parado_surfaces = []
+
+for imagem in range(1, 14):
+    img = pygame.image.load(f'assets/jogador/parado/Hero Boy Idle{imagem}.png').convert_alpha()
+    jogador_parado_surfaces.append(img)
+
+# Carrega as imagens do personagem voando
+jogador_voando_surfaces = []
+
+for imagem in range(1, 9):
+    img = pygame.image.load(f'assets/jogador/voar/Hero Boy Fly{imagem}.png').convert_alpha()
+    jogador_voando_surfaces.append(img)
+
+jogador_surfaces_rect = jogador_parado_surfaces[jogador_index].get_rect(center = (100, 430))
 
 # Cria um relógico para controlar os FPS
 relogio = pygame.time.Clock()
 
+# Controla se o personagem está andando (negativo esquerda, positivo direita)
 movimento_personagem = 0
+direcao_personagem = 0
 
-#Loop priincipal do jogo
+#Loop principal do jogo
 while True:
     for evento in pygame.event.get():
         if evento.type == pygame.QUIT:
             pygame.quit()
             exit()
     
-    if evento.type == pygame.KEYDOWN:
-        if evento.key == pygame.K_RIGHT:
-            movimento_personagem = 5
+        if evento.type == pygame.KEYDOWN:
+            if evento.key == pygame.K_RIGHT:
+                movimento_personagem = 2
+                direcao_personagem = 1
 
-        if evento.key == pygame.K_LEFT:
-            movimento_personagem = -5
+            if evento.key == pygame.K_LEFT:
+                movimento_personagem = -2
+                direcao_personagem = 0
+
+            if evento.key == pygame.K_DOWN:
+                movimento_personagem = 0
+        
+        if evento.type == pygame.KEYUP:
+            if evento.key == pygame.K_RIGHT:
+                movimento_personagem = 0
+            
+            if evento.key == pygame.K_LEFT:
+                movimento_personagem = 0
 
 # Desenha o fundo na tela
     tela.blit(plano_fundo, (0,0))
@@ -68,13 +97,31 @@ while True:
     tela.blit(lua, (0,0))
     tela.blit(pedraflutuante, (0,0))
 
-# Desenha o jogador na tela
-    jogador_parado_rect.x += movimento_personagem
-    tela.blit(jogador_parado_surf,jogador_parado_rect)
+# Calcula o movimento do personagem
+    jogador_surfaces_rect.x += movimento_personagem
+
+    if movimento_personagem == 0:
+        jogador_surfaces = jogador_parado_surfaces
+    else:
+        jogador_surfaces = jogador_voando_surfaces
     
-    # Atualiza a tela com o conteudo
+    # Avança para o proximo frame
+    jogador_index += 0.15
+
+    if jogador_index > len(jogador_surfaces) - 1:
+        jogador_index = 0
+    
+    if direcao_personagem == 1:
+        jogador_flipando = pygame.transform.flip(jogador_surfaces[int(jogador_index)], True, False)
+    else:
+        jogador_flipando = jogador_surfaces[int(jogador_index)]
+
+# Desenha o jogador na tela 
+    tela.blit(jogador_surfaces[int(jogador_index)],jogador_surfaces_rect)
+ 
+# Atualiza a tela com o conteudo
     pygame.display.update()
 
-    # Define a quantidade de frames por segundo
+# Define a quantidade de frames por segundo
     relogio.tick(60)
 
