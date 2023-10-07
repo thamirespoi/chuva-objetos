@@ -1,7 +1,7 @@
 import pygame
 from sys import exit
-import random 
 from random import randint, choice
+pygame.init()
 
 def animacao_rochas():
     global movimento_rochas
@@ -33,6 +33,11 @@ def animacao_personagem():
     global jogador_index
     # Calcula o movimento do personagem
     jogador_surfaces_rect.x += movimento_personagem
+
+    if jogador_surfaces_rect.right > 950:
+      jogador_surfaces_rect.right = 950
+    elif jogador_surfaces_rect.left <= 0:
+       jogador_surfaces_rect.left = 0
 
     if movimento_personagem == 0:
         jogador_surfaces = jogador_parado_surfaces
@@ -92,10 +97,35 @@ def movimento_objetos_chuva():
         if objeto['retangulo'].y > 540:
             lista_chuva_objeto.remove(objeto)
 
+def colisoes_jogador():
+    global vida, moeda
+    for objeto in lista_chuva_objeto:
+        if jogador_surfaces_rect.colliderect(objeto['retangulo']):
+            if objeto['tipo'] == 'Projetil':
+                vida -= 1
+                print (f"{vida}")
+            elif objeto['tipo'] == 'Coracao':
+                vida += 1
+                print (f"{vida}")
+            elif objeto['tipo'] == 'Moeda':
+                moeda += 1
+                print (f"{moeda}")
 
+            lista_chuva_objeto.remove(objeto)
 
-# Inicializa o pygame
-    pygame.init()
+def mostra_textos():
+    global moeda, vida
+    texto_moedas = fonte_pixel.render(f"{moeda}", True, '#FFFFFF')
+    texto_coracoes = fonte_pixel.render(f"{vida}", True, '#FFFFFF')
+
+    logo_moeda = pygame.transform.scale(moeda_surfaces[0], (30, 30))
+    logo_coracao = pygame.transform.scale(coracao_surfaces[0], (40, 40))
+
+    tela.blit(logo_coracao, (5, 0))
+    tela.blit(logo_moeda, (10, 45))
+
+    tela.blit(texto_coracoes, (50, 10))
+    tela.blit(texto_moedas, (50, 50))
 
 # Cria a tela
 tamanho = (960, 540)
@@ -107,6 +137,9 @@ pygame.display.set_caption("ChuvaMortal")
 ##
 ## Importa os arquivos necessários
 ##
+
+# Carrega a fonte do Jogo
+fonte_pixel = pygame.font.Font('assets/font/Pixeltype.ttf', 50)
 
 # Carrega o plano de fundo
 plano_fundo = pygame.image.load('assets/fundo/Night-Background8.png').convert()
@@ -183,6 +216,8 @@ relogio = pygame.time.Clock()
 movimento_personagem = 0
 direcao_personagem = 0
 movimento_objeto = 0
+vida = 3
+moeda = 0
 
 # Cria um evento para adicionar um objeto na tela
 novo_objeto_timer = pygame.USEREVENT + 1
@@ -214,31 +249,41 @@ while True:
             
             if evento.key == pygame.K_LEFT:
                 movimento_personagem = 0
+        
+        #if evento.type == pygame.K_ESCAPE:
 
         if evento.type == novo_objeto_timer:
             adicionar_objeto()
 
-
-# Desenha o fundo na tela
+    # Desenha o fundo na tela
     tela.blit(plano_fundo, (0,0))
 
+    # Faz a chamada da função movimento das estrelas
     animacao_estrelas()
 
     tela.blit(chao, (0,0))
     tela.blit(pedrachao, (0,0))
     tela.blit(lua, (0,0))
 
+    # Faz a chamada da função movimento das rochas
     animacao_rochas()
-    
+        
 
-# Faz a chamada da função animação do personagem
+    # Faz a chamada da função animação do personagem
     animacao_personagem()
 
+    # Faz a chamada da função movimento de objetos na chuva
     movimento_objetos_chuva()
 
-# Atualiza a tela com o conteudo
+    # Faz a chamada da função colisões do jogador
+    colisoes_jogador()
+
+    # Faz a chamada da função de texto na tela
+    mostra_textos()
+
+    # Atualiza a tela com o conteudo
     pygame.display.update()
 
-# Define a quantidade de frames por segundo
+    # Define a quantidade de frames por segundo
     relogio.tick(60)
 
